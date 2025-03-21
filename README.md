@@ -23,12 +23,6 @@ Installation
 
 Clone or download the repository, then include the script in your project. If you're using Node.js, you might install it as a module by copying `lensecraftr.js` into your project directory.
 
-bash
-
-Copy CodeCopied
-
-`# Clone repository or copy lensecraftr.js into your project folder git clone https://github.com/your-username/lensecraftr.git`
-
 * * *
 
 Usage
@@ -38,51 +32,111 @@ Usage
 
 In a Node.js environment:
 
-javascript
+```javascript
 
-Copy CodeCopied
-
-`const lensecraftr = require('./lensecraftr');`
+const lensecraftr = require('./lensecraftr');
+```
 
 ### Basic Example
 
 Here's a basic example using a set of raw OCR segments:
 
-javascript
+```javascript
 
-Copy CodeCopied
+const rawSegments = [
+  {
+    text: "Hello",
+    boundingBox: { pixelCoords: { x: 100, y: 50, width: 60, height: 20 } },
+  },
+  {
+    text: "World",
+    boundingBox: { pixelCoords: { x: 170, y: 53, width: 80, height: 20 } },
+  },
+  {
+    text: "This",
+    boundingBox: { pixelCoords: { x: 95, y: 100, width: 50, height: 20 } },
+  },
+  {
+    text: "is",
+    boundingBox: { pixelCoords: { x: 150, y: 102, width: 30, height: 20 } },
+  },
+  {
+    text: "lensecraftr",
+    boundingBox: { pixelCoords: { x: 190, y: 105, width: 120, height: 20 } },
+  },
+];
+const crafter = new lensecraftr(1.5, "ltr");
+const { lines, paragraphs } = crafter.process(rawSegments);
+console.log("Lines:");
+lines.forEach((line, index) => {
+  console.log(`Line ${index + 1}: ${line.combinedText}`);
+});
+console.log("\nParagraphs:");
+paragraphs.forEach((para, index) => {
+  console.log(`Paragraph ${index + 1}: ${para.combinedText}`);
+});
 
-``const rawSegments = [   {     text: "Hello",     boundingBox: { pixelCoords: { x: 100, y: 50, width: 60, height: 20 } }   },   {     text: "World",     boundingBox: { pixelCoords: { x: 170, y: 53, width: 80, height: 20 } }   },   {     text: "This",     boundingBox: { pixelCoords: { x: 95, y: 100, width: 50, height: 20 } }   },   {     text: "is",     boundingBox: { pixelCoords: { x: 150, y: 102, width: 30, height: 20 } }   },   {     text: "lensecraftr",     boundingBox: { pixelCoords: { x: 190, y: 105, width: 120, height: 20 } }   } ]; const crafter = new lensecraftr(1.5, "ltr"); const { lines, paragraphs } = crafter.process(rawSegments); console.log("Lines:"); lines.forEach((line, index) => {   console.log(`Line ${index + 1}: ${line.combinedText}`); }); console.log("\nParagraphs:"); paragraphs.forEach((para, index) => {   console.log(`Paragraph ${index + 1}: ${para.combinedText}`); });``
+
+```
 
 ### Using Different Density Factors
 
 Adjust the grouping sensitivity by specifying different density factors (scale 0 to 4):
 
-javascript
+```javascript
 
-Copy CodeCopied
-
-`const crafterLow = new lensecraftr(0.5, "ltr"); // Process rawSegments with a low density factor const crafterHigh = new lensecraftr(4, "ltr"); // Process rawSegments with a high density factor`
+const crafterLow = new lensecraftr(0.5, "ltr"); // Process rawSegments with a low density factor
+const crafterHigh = new lensecraftr(4, "ltr"); // Process rawSegments with a high density factor
+```
 
 ### Right-to-Left (RTL) Sorting
 
+This is expecting that segments were able to be captured with the right words in intended language.
+
 For OCR data in RTL languages:
 
-javascript
+```javascript
 
-Copy CodeCopied
+const rawSegmentsRTL = [
+  {
+    text: "مرحبا",
+    boundingBox: { pixelCoords: { x: 200, y: 40, width: 70, height: 20 } },
+  },
+  {
+    text: "بك",
+    boundingBox: { pixelCoords: { x: 130, y: 42, width: 60, height: 20 } },
+  },
+  {
+    text: "العالم",
+    boundingBox: { pixelCoords: { x: 250, y: 45, width: 80, height: 20 } },
+  },
+];
+const crafterRTL = new lensecraftr(1, "rtl");
+const { lines } = crafterRTL.process(rawSegmentsRTL);
+lines.forEach((line, index) => {
+  console.log(`Line ${index + 1}: ${line.combinedText}`);
+});
 
-``const rawSegmentsRTL = [   {     text: "مرحبا",     boundingBox: { pixelCoords: { x: 200, y: 40, width: 70, height: 20 } }   },   {     text: "بك",     boundingBox: { pixelCoords: { x: 130, y: 42, width: 60, height: 20 } }   },   {     text: "العالم",     boundingBox: { pixelCoords: { x: 250, y: 45, width: 80, height: 20 } }   } ]; const crafterRTL = new lensecraftr(1, "rtl"); const { lines } = crafterRTL.process(rawSegmentsRTL); lines.forEach((line, index) => {   console.log(`Line ${index + 1}: ${line.combinedText}`); });``
+```
 
 ### Asynchronous Workflow Integration
 
 lensecraftr can easily be integrated with asynchronous OCR libraries. For instance, using the `chrome-lens-ocr`:
 
-javascript
+```javascript
 
-Copy CodeCopied
-
-``const lensecraftr = require("./lensecraftr"); const Lens = require("chrome-lens-ocr"); const lens = new Lens(); lens.scanByFile("path/to/your/image.jpg")   .then((rawSegments) => {     const crafter = new lensecraftr(1.5, "ltr");     const { lines, paragraphs } = crafter.process(rawSegments);     console.log("Extracted Lines:");     lines.forEach((line, index) => {       console.log(`Line ${index + 1}: ${line.combinedText}`);     });   })   .catch((error) => console.error("OCR scan failed:", error));``
+const lensecraftr = require("./lensecraftr");
+const Lens = require("chrome-lens-ocr");
+const lens = new Lens(); lens.scanByFile("path/to/your/image.jpg")   .then((rawSegments) => {
+    const crafter = new lensecraftr(1.5, "ltr");
+    const { lines, paragraphs } = crafter.process(rawSegments);
+    console.log("Extracted Lines:");
+        lines.forEach((line, index) => {
+            console.log(`Line ${index + 1}: ${line.combinedText}`);
+            });
+        })
+        .catch((error) => console.error("OCR scan failed:", error));
+```
 
 * * *
 
