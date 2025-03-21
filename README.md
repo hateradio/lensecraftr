@@ -34,7 +34,7 @@ In a Node.js environment:
 
 ```javascript
 
-const lensecraftr = require('./lensecraftr');
+const LenseCraftr = require('./lensecraftr');
 ```
 
 ### Basic Example
